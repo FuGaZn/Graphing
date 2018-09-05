@@ -1,6 +1,8 @@
 # graphing
 
-> A Vue.js project
+> written in Vue<br>
+> Homework of Software Construction, SE, NJU<br>
+> Main functions: drawing shapes/open&save files/recognize shapes(simple and incomplete)
 
 ## Build Setup
 
