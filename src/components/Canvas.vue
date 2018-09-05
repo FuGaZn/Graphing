@@ -2,13 +2,12 @@
   <div>
     <div id="background"></div>
     <div id="menu">
-      <el-dropdown size="mini" trigger="click">
+      <el-dropdown size="mini" trigger="click" @command="handleFile">
         <span id="fileMenu" class="text"><i class="el-icon-document"></i> File</span>
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item>New</el-dropdown-item>
-          <el-dropdown-item>Open</el-dropdown-item>
-          <el-dropdown-item>Save</el-dropdown-item>
-          <el-dropdown-item>Save as</el-dropdown-item>
+          <el-dropdown-item command="0">New</el-dropdown-item>
+          <el-dropdown-item command="1">Open</el-dropdown-item>
+          <el-dropdown-item command="2">Save</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
       <el-button id="clearButton" type="text" @click="clearCanvas"><i class="icon-xiangpi"></i>clear</el-button>
@@ -18,16 +17,19 @@
     <div class="div">
       <canvas id="canvas" @click="drawShape" width="800px" height="440px"></canvas>
       <el-color-picker id="colorPicker" v-model="linesColor" size="mini"></el-color-picker>
-      <div id="nameDiv">{{shapeShow}}</div>
+      <div id="nameDiv">{{shapeShow.name}}</div>
     </div>
+    <input @change="fileChange" type="file" id="openFile" multiple style="display: none"/>
   </div>
 </template>
 
 <script>
+  import { saveAs } from 'file-saver/FileSaver'
   export default {
     name: "canvas",
     data() {
       return {
+        fileContext: '',
         strokesCount: 0,
         shapeShow: '',
         shapes: [
@@ -49,29 +51,80 @@
           }
         ],
         linesColor: "#1d86ff",
-        fileMenu: [],
-        paths: ''
+
       }
     },
-    created(){
-      this.drawShape().click();
-    },
+
     methods: {
+      handleFile(command){
+        if(command == 0){
+          this.newFile();
+        }else if(command == 1){
+          this.openFile();
+        }else if(command == 2){
+          this.saveFile();
+        }
+      },
+
+      newFile(){
+        this.paths = '';
+        this.clearCanvas();
+      },
+
+      openFile(){
+        document.getElementById('openFile').click();
+      },
+
+      fileChange (el) {
+        if (!el.target.files[0].size) return
+        let reader = new FileReader();
+        reader.readAsText(el.target.files[0]);
+        var _this = this;
+        reader.onload = function () {
+          _this.fileContext = this.result;
+        }
+        el.target.value = ''
+        var context = this.fileContext;
+        if(context.length == 0)
+          return;
+        var type = context.substr(0, 3);
+        var isCorrect = 0;
+        for(var i = 0; i < this.shapes.length; i++){
+          if(type == this.shapes[i].type){
+            this.shapeShow = this.shapes[i];
+            this.strokesCount = i+1;
+            var src = context.substr(3, context.length);
+            var canvas = document.getElementById('canvas'), cxt = canvas.getContext('2d');
+            var img = new Image();
+            img.src = src;
+            img.onload = function () {
+              cxt.drawImage(img,0,0);
+            }
+            isCorrect = 1;
+            break;
+          }
+        }
+        if(isCorrect == 0)
+          this.remindError("所读文件非正确文件。");
+      },
+
+      saveFile(){
+        var canvas = document.getElementById('canvas');
+        var blob = new Blob([this.shapeShow.type, canvas.toDataURL()], {type: "text/plain;charset=utf-8"})
+        saveAs(blob, this.shapeShow.name+'.txt');
+      },
+
       remindError(message) {
         this.$message.error(message);
       },
-      saveStandardFile(){
 
-      },
-      openStandardFile(){
-
-      },
       clearCanvas(){
         var canvas = document.getElementById('canvas');
         var ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, 800, 440);
         this.strokesCount = 0;
-        this.shapeShow = '';
+        this.shapeShow = {};
+        this.fileContext = '';
       },
       recognizeShape(){
         if(this.strokesCount==0){
@@ -79,8 +132,7 @@
         }else if(this.strokesCount>4){
           this.remindError('笔画过多。')
         }else{
-          this.shapeShow = this.shapes[this.strokesCount-1].name;
-          console.log(this.shapeShow)
+          this.shapeShow = this.shapes[this.strokesCount-1];
         }
       },
       drawShape(){
