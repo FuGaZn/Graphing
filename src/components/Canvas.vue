@@ -25,8 +25,8 @@
 <script>
   import { saveAs } from 'file-saver/FileSaver'
   export default {
-    name: "canvas",
-    data() {
+    name: 'canvas',
+    data () {
       return {
         strokesCount: 0,
         shapeShow: '',
@@ -48,119 +48,121 @@
             type: 'rec'
           }
         ],
-        linesColor: "#1d86ff",
+        linesColor: '#1d86ff'
 
       }
     },
-    mounted(){
-      this.drawShape();
+    mounted () {
+      this.drawShape()
     },
     methods: {
-      handleFile(command){
-        if(command == 0){
-          this.newFile();
-        }else if(command == 1){
-          this.openFile();
-        }else if(command == 2){
-          this.saveFile();
+      handleFile (command) {
+        if (command === 0) {
+          this.newFile()
+        } else if (command === 1) {
+          this.openFile()
+        } else if (command === 2) {
+          this.saveFile()
         }
       },
 
-      newFile(){
-        this.clearCanvas();
+      newFile () {
+        this.clearCanvas()
       },
 
-      openFile(){
-        document.getElementById('openFile').click();
+      openFile () {
+        document.getElementById('openFile').click()
       },
 
       fileChange (el) {
         if (!el.target.files[0].size) return
-        let reader = new FileReader();
-        reader.readAsText(el.target.files[0]);
-        console.log(el.target.files[0]);
-        var _this = this;
+        let reader = new FileReader()
+        reader.readAsText(el.target.files[0])
+        var _this = this
         reader.onload = function () {
-          var context = this.result;
-          if(context.length == 0)
-            return;
-          var type = context.substr(0, 3);
-          var isCorrect = 0;
-          for(var i = 0; i < _this.shapes.length; i++){
-            if(type == _this.shapes[i].type){
-              _this.shapeShow = _this.shapes[i];
-              _this.strokesCount = i+1;
-              var src = context.substr(3, context.length);
-              var canvas = document.getElementById('canvas'), cxt = canvas.getContext('2d');
-              var img = new Image();
-              img.src = src;
+          var context = this.result
+          if (context.length === 0) {
+            return
+          }
+          var type = context.substr(0, 3)
+          var isCorrect = 0
+          for (var i = 0; i < _this.shapes.length; i++) {
+            if (type === _this.shapes[i].type) {
+              _this.shapeShow = _this.shapes[i]
+              _this.strokesCount = i + 1
+              var src = context.substr(3, context.length)
+              var canvas = document.getElementById('canvas')
+              var cxt = canvas.getContext('2d')
+              var img = new Image()
+              img.src = src
               img.onload = function () {
-                cxt.drawImage(img,0,0);
+                cxt.drawImage(img, 0, 0)
               }
-              isCorrect = 1;
-              break;
+              isCorrect = 1
+              break
             }
           }
-          if(isCorrect == 0)
-            this.remindError("所读文件非正确文件。");
+          if (isCorrect === 0) {
+            this.remindError('所读文件非正确文件。')
+          }
         }
         el.target.value = ''
       },
 
-      saveFile(){
-        var canvas = document.getElementById('canvas');
-        var blob = new Blob([this.shapeShow.type, canvas.toDataURL()], {type: "text/plain;charset=utf-8"})
-        saveAs(blob, this.shapeShow.name+'.txt');
+      saveFile () {
+        var canvas = document.getElementById('canvas')
+        var blob = new Blob([this.shapeShow.type, canvas.toDataURL()], {type: 'text/plain;charset=utf-8'})
+        saveAs(blob, this.shapeShow.name + '.txt')
       },
 
-      remindError(message) {
-        this.$message.error(message);
+      remindError (message) {
+        this.$message.error(message)
       },
 
-      clearCanvas(){
-        var canvas = document.getElementById('canvas');
-        var ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, 800, 440);
-        this.strokesCount = 0;
-        this.shapeShow = {};
+      clearCanvas () {
+        var canvas = document.getElementById('canvas')
+        var ctx = canvas.getContext('2d')
+        ctx.clearRect(0, 0, 800, 440)
+        this.strokesCount = 0
+        this.shapeShow = {}
       },
 
-      recognizeShape(){
-        if(this.strokesCount==0){
-          this.remindError('空白！您尚未画图。');
-        }else if(this.strokesCount>4){
+      recognizeShape () {
+        if (this.strokesCount === 0) {
+          this.remindError('空白！您尚未画图。')
+        } else if (this.strokesCount > 4) {
           this.remindError('笔画过多。')
-        }else{
-          this.shapeShow = this.shapes[this.strokesCount-1];
+        } else {
+          this.shapeShow = this.shapes[this.strokesCount - 1]
         }
       },
 
-      drawShape(){
-        var canvas = document.getElementById('canvas');
-        var ctx = canvas.getContext('2d');
-        var _this = this;
-        ctx.beginPath();
+      drawShape () {
+        var canvas = document.getElementById('canvas')
+        var ctx = canvas.getContext('2d')
+        var _this = this
+        ctx.beginPath()
         canvas.onmousedown = function (ev) {
-          var x = ev.offsetX, y = ev.offsetY;
-          ctx.moveTo(x, y);
+          var x = ev.offsetX
+          var y = ev.offsetY
+          ctx.moveTo(x, y)
           canvas.onmousemove = function (ev) {
-            var nextX = ev.offsetX, nextY = ev.offsetY;
-            ctx.lineWidth=0.5;
-            ctx.strokeStyle = _this.linesColor;
-            ctx.lineTo(nextX, nextY);
-            ctx.stroke();
+            var nextX = ev.offsetX
+            var nextY = ev.offsetY
+            ctx.lineWidth = 0.5
+            ctx.strokeStyle = _this.linesColor
+            ctx.lineTo(nextX, nextY)
+            ctx.stroke()
           }
           canvas.onmouseup = function (ev) {
-            canvas.onmousemove = null;
-            canvas.onmouseup = null;
-            _this.strokesCount+=1;
+            canvas.onmousemove = null
+            canvas.onmouseup = null
+            _this.strokesCount += 1
           }
         }
       }
-    },
-
+    }
   }
-
 </script>
 
 <style scoped>
