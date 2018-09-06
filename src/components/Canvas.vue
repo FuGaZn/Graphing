@@ -10,9 +10,8 @@
           <el-dropdown-item command="2">Save</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
-      <el-button id="clearButton" type="text" @click="clearCanvas"><i class="icon-xiangpi"></i>clear</el-button>
-      <el-button id="recognizeButton" type="text" @click="recognizeShape"><i class="icon-xiangpi"></i>recognize</el-button>
-
+      <el-button id="clearButton" type="text" @click="clearCanvas"><i class="el-icon-ali-xiangpi"></i> Clear</el-button>
+      <el-button id="recognizeButton" type="text" @click="recognizeShape"><i class="el-icon-ali-recognize"></i> Recognize</el-button>
     </div>
     <div class="div">
       <canvas id="canvas" @click="drawShape" width="800px" height="440px"></canvas>
@@ -29,7 +28,6 @@
     name: "canvas",
     data() {
       return {
-        fileContext: '',
         strokesCount: 0,
         shapeShow: '',
         shapes: [
@@ -54,7 +52,9 @@
 
       }
     },
-
+    mounted(){
+      this.drawShape();
+    },
     methods: {
       handleFile(command){
         if(command == 0){
@@ -67,7 +67,6 @@
       },
 
       newFile(){
-        this.paths = '';
         this.clearCanvas();
       },
 
@@ -79,33 +78,33 @@
         if (!el.target.files[0].size) return
         let reader = new FileReader();
         reader.readAsText(el.target.files[0]);
+        console.log(el.target.files[0]);
         var _this = this;
         reader.onload = function () {
-          _this.fileContext = this.result;
+          var context = this.result;
+          if(context.length == 0)
+            return;
+          var type = context.substr(0, 3);
+          var isCorrect = 0;
+          for(var i = 0; i < _this.shapes.length; i++){
+            if(type == _this.shapes[i].type){
+              _this.shapeShow = _this.shapes[i];
+              _this.strokesCount = i+1;
+              var src = context.substr(3, context.length);
+              var canvas = document.getElementById('canvas'), cxt = canvas.getContext('2d');
+              var img = new Image();
+              img.src = src;
+              img.onload = function () {
+                cxt.drawImage(img,0,0);
+              }
+              isCorrect = 1;
+              break;
+            }
+          }
+          if(isCorrect == 0)
+            this.remindError("所读文件非正确文件。");
         }
         el.target.value = ''
-        var context = this.fileContext;
-        if(context.length == 0)
-          return;
-        var type = context.substr(0, 3);
-        var isCorrect = 0;
-        for(var i = 0; i < this.shapes.length; i++){
-          if(type == this.shapes[i].type){
-            this.shapeShow = this.shapes[i];
-            this.strokesCount = i+1;
-            var src = context.substr(3, context.length);
-            var canvas = document.getElementById('canvas'), cxt = canvas.getContext('2d');
-            var img = new Image();
-            img.src = src;
-            img.onload = function () {
-              cxt.drawImage(img,0,0);
-            }
-            isCorrect = 1;
-            break;
-          }
-        }
-        if(isCorrect == 0)
-          this.remindError("所读文件非正确文件。");
       },
 
       saveFile(){
@@ -124,8 +123,8 @@
         ctx.clearRect(0, 0, 800, 440);
         this.strokesCount = 0;
         this.shapeShow = {};
-        this.fileContext = '';
       },
+
       recognizeShape(){
         if(this.strokesCount==0){
           this.remindError('空白！您尚未画图。');
@@ -135,13 +134,14 @@
           this.shapeShow = this.shapes[this.strokesCount-1];
         }
       },
+
       drawShape(){
         var canvas = document.getElementById('canvas');
         var ctx = canvas.getContext('2d');
         var _this = this;
+        ctx.beginPath();
         canvas.onmousedown = function (ev) {
           var x = ev.offsetX, y = ev.offsetY;
-          ctx.beginPath();
           ctx.moveTo(x, y);
           canvas.onmousemove = function (ev) {
             var nextX = ev.offsetX, nextY = ev.offsetY;
@@ -179,7 +179,7 @@
     color: #2c2e30;
     position: absolute;
     top: -8px;
-    left: 80px;
+    left: 74px;
   }
   #clearButton:active{
     padding-left: 1px;
@@ -190,7 +190,7 @@
     color: #2c2e30;
     position: absolute;
     top: -8px;
-    left: 130px;
+    left: 137px;
   }
   #recognizeButton:active{
     padding-left: 1px;
