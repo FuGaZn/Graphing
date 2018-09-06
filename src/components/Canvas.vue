@@ -123,6 +123,8 @@
         var canvas = document.getElementById('canvas')
         var ctx = canvas.getContext('2d')
         ctx.clearRect(0, 0, 800, 440)
+        canvas.onmousemove = null
+        canvas.onmouseup = null
         this.strokesCount = 0
         this.shapeShow = {}
       },
